@@ -1,101 +1,117 @@
 
-// global variables
 
+// global variables
 int marginX = 100;
 int marginY = 100;
 Table table;
 int days [];
-float hours [];
-float xDot [];
-float yDot [];
-float newX [];
-float temp =0;
+float hours [];   // hours in percentage 
+float info [];    // hours for info bubble
+String week [];
+float xDot [];    // x location of the dot
+float yDot [];    // y location of the dot
+float newX [];    // x location of intermediate dots (to draw crazy triangular thing)
+PFont myFont;     
 
 
+//-------------------------------------------------------------------`
 void setup() {
-  
+
   size(1200, 700);
   smooth();
-  noLoop();
+//  noLoop();   //<--------- mouse interaction will not work !!!!!
+
+  //load font in
+  myFont = createFont("helvetica", 9);
+  textFont(myFont);
   
-  table = loadTable("Data_week4_cleanup.csv", "header");
-  //println(table.getRowCount() + " toatal rows in table");
-
-  days = new int[table.getRowCount()];
-  hours = new float[table.getRowCount()];
-
-  int i = 0;
-
-  for (TableRow row: table.rows()) {
-
-    days[i] = row.getInt("day");
-    hours[i] = row.getFloat(" hour");
-
-    println(days[i]+ " / " +hours[i]);
-    i++;
-  }
-} 
+  loadData();
   
-void draw(){
-  background(255);
-  
-  // compute dots location
-  
+  // compute dots location  
   xDot = new float[days.length];
   yDot = new float[hours.length];
-  
-  
+
   for (int i=0; i<days.length; i++) {
-    println(i);
-    xDot[i] = marginX + map(i, 0, days.length-1, 0, width-marginX *2); 
-    yDot[i] = height-marginY - map(hours[i], min(hours), max(hours), 0, 500);
+   // println(i);
+    xDot[i] = map(i, 0, days.length-1, marginX, width-marginX); 
+    yDot[i] = map(hours[i], max(hours), min(hours), marginY, height-marginY);
   } 
+} 
+
+
+//-------------------------------------------------------------------`
+
+
+
+//-------------------------------------------------------------------`
+void draw() {
+  background(255);
   
-  
-  // connect dots with lines
-  stroke(255);
-  for (int i=0; i<days.length-1; i++){
-    line(xDot[i], yDot[i], xDot[i+1], yDot[i+1]);
-   
-  }
-  
-  
-  
-    // draw dots
+
+// --------------------------------------------------------------------------------------- //
+  //connect dots with lines
+  //  stroke(0);
+  //  for (int i=0; i<days.length-1; i++){
+  //    line(xDot[i], yDot[i], xDot[i+1], yDot[i+1]);
+  //   
+  //  }  
+// --------------------------------------------------------------------------------------- //  
+
+  // draw dots
   noStroke();
   fill(49, 172, 151);
   for (int i=0; i<days.length; i++) {
-    ellipse( xDot[i], yDot[i], 8, 8);
+    ellipse( xDot[i], yDot[i], 5, 5);
   } 
+
+
+  // draw timeline
+  stroke(0);
+  line(80, height-marginY, width-marginX, height-marginY); 
   
-  
+  //write annotations
+    for (int i=0; i<days.length; i++) {
+      textAlign(CENTER);
+      text(days[i], xDot[i], height-80);
+      text(week[i], xDot[i], height-65);
+    }
+
+
   // try my crazy line thing
   newX  = new float[days.length];
-  
+
+  //calculate intermediate dots
   for (int i=0; i<days.length-1; i++) {
     newX[i] = (xDot[i] +xDot[i+1])/2;
-    println(newX);
-    }
-  
-  
+   // println(newX);
+  }
+
+  // connect intermediate dots with triangular lines
+  strokeWeight(0.5);
   stroke(155);
-  for (int i=0; i<days.length-1; i++){  
-  line(xDot[i], yDot[i], newX[i], height-marginY);
-  line(newX[i], height-marginY, xDot[i+1], yDot[i+1]);
+  for (int i=0; i<days.length-1; i++) {  
+    line(xDot[i], yDot[i], newX[i], height-marginY);
+    line(newX[i], height-marginY, xDot[i+1], yDot[i+1]);
   }
  
   
-  
-  
-  
-  // draw annotations
-  stroke(0);
-  line(marginX, height-marginY, width-marginX, height-marginY);
-    
+  // mouse over shows info bubble 
+  noStroke();
+  fill(49, 172, 151, 60);
+  for (int i = 0; i < days.length; i++){
+     
+     float distance = dist( mouseX, mouseY, xDot[i], yDot[i]);
+     if (distance < 10){
+         rect(mouseX, mouseY, 75,20);
+         //textAlign(CENTER);
+         fill(0);
+         text(info[i]+ " hours", mouseX+40, mouseY+13);
+     } 
+  }
 
-
-
-  
-  
 }
+  
+  
+  
+
 
